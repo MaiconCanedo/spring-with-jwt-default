@@ -1,0 +1,66 @@
+###
+POST http://localhost:7357/clientes
+Content-Type: application/json;charset=UTF-8
+
+{
+    "nome": "Maicon",
+    "email": "maicon.rocha",
+    "password": "12345",
+    "perfis": [
+        "ADMIN"
+    ]
+}
+
+###
+POST http://localhost:7357/clientes
+Content-Type: application/json;charset=UTF-8
+
+{
+    "nome": "Rafael Salgado",
+    "email": "rafeal",
+    "password": "12345",
+    "perfis": [
+        "CLIENTE"
+    ]
+}
+
+###
+POST http://localhost:7357/login
+Content-Type: application/json;charset=UTF-8
+
+{
+    "email": "maicon.rocha",
+    "password": "12345"
+}
+
+###
+POST http://localhost:7357/login
+Content-Type: application/json;charset=UTF-8
+
+{
+    "email": "rafeal",
+    "password": "12345"
+}
+
+###
+GET http://localhost:7357/clientes
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtYWljb24ucm9jaGEiLCJleHAiOjE1NjM5MTQwMzN9.UR6twf59uQHEI9-PMCmHywNUfv7B1ISUPhQfOfmYskEz4Y9-fTBbH0kspKI9BoarcdVRfiw3FueL9uClwMIppA
+
+###
+GET http://localhost:7357/clientes?nome=Maicon
+Authorization: Bearer eyJhbGciOiJIzUxMiJ9.eyJzdWIiOiJyYWZlYWwiLCJleHAiOjE1NjM5MTIwNTJ9.Q9G3PqJYCVZcS-wtUxrJhsKAMpXIywYaZhb19wNzew5UYVdpu799RPW1hKi5cjtF4aLhAu0k7Wd3q3flmCoydw
+
+
+###
+PATCH http://localhost:7357/clientes
+Authorization: Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJtYWljb24ucm9jaGEiLCJleHAiOjE1NjM5MTIzMzF9.3iSwdwhuM4TDMEAP9gSdMf3hHCgaPlhrRJ30H7YjOuGkd-btnxJ-1z7M74nvzDazm2wZdWaIhxzPAo13WGKRSg
+Content-Type: application/json;charset=UTF-8
+
+{
+    "nome": "Rafael Paes Leme",
+    "email": "rafeal",
+    "password": "12345",
+    "perfis": [
+        "CLIENTE"
+    ]
+}
