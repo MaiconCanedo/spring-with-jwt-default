@@ -23,7 +23,7 @@ public class UserSpringSecurity implements UserDetails {
         this.email = cliente.getEmail();
         this.password = cliente.getPassword();
         this.authorities = cliente.getPerfis().stream()
-                .map(perfil -> new SimpleGrantedAuthority(perfil.getDescricao()))
+                .map(perfil -> new SimpleGrantedAuthority(perfil.authority()))
                 .collect(Collectors.toList());
     }
 
