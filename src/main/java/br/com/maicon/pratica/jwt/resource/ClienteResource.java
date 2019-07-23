@@ -50,7 +50,7 @@ public class ClienteResource {
     @PatchMapping(path = "{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                                        @RequestBody Map<String, Object> clienteMap) {
-        if (clienteService.update(id, clienteMap))
+        if (!clienteService.update(id, clienteMap))
             throw new NotFoundException("Cliente não encontrado");
         return ResponseEntity.ok().build();
     }

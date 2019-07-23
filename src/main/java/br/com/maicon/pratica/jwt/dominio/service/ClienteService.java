@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -72,9 +72,9 @@ public class ClienteService {
             if (value == null)
                 return null;
             if (key.equals("perfis"))
-                return ((Set<String>) value).stream()
+                return new HashSet<>(((List<String>) value).stream()
                         .map(Perfil::valueOf)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toList()));
             return value;
         });
     }
