@@ -1,6 +1,6 @@
 package br.com.maicon.pratica.jwt;
 
-import br.com.maicon.pratica.jwt.dominio.service.JWTAuthorizationFilter;
+import br.com.maicon.pratica.jwt.security.JWTAuthorizationFilter;
 import br.com.maicon.pratica.jwt.security.JWTAuthenticationFilter;
 import br.com.maicon.pratica.jwt.security.JWTUtil;
 import org.springframework.context.annotation.Bean;

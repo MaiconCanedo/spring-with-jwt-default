@@ -1,4 +1,4 @@
-package br.com.maicon.pratica.jwt.dominio.service;
+package br.com.maicon.pratica.jwt.security;
 
 import br.com.maicon.pratica.jwt.security.JWTUtil;
 import org.springframework.security.authentication.AuthenticationManager;
