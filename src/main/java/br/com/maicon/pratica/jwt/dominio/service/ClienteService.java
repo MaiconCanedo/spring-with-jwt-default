@@ -38,6 +38,12 @@ public class ClienteService {
         return clienteRepository.save(cliente);
     }
 
+    public List<Cliente> findByNome(String nome) {
+        if (StringUtils.hasLength(nome))
+            clienteRepository.findByNomeContainingIgnoreCase(nome);
+        return clienteRepository.findAll();
+    }
+
     public Optional<Cliente> findById(Long id) {
         return clienteRepository.findById(id);
     }
