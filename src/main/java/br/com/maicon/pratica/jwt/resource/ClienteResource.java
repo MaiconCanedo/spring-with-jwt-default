@@ -5,11 +5,13 @@ import br.com.maicon.pratica.jwt.dominio.entity.Cliente;
 import br.com.maicon.pratica.jwt.dominio.exception.NotFoundException;
 import br.com.maicon.pratica.jwt.dominio.service.ClienteService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,5 +44,14 @@ public class ClienteResource {
         final URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri()
                 .path("/{id}").buildAndExpand(save.getId()).toUri();
         return ResponseEntity.created(uri).build();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PatchMapping(path = "{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id,
+                                       @RequestBody Map<String, Object> clienteMap) {
+        if (clienteService.update(id, clienteMap))
+            throw new NotFoundException("Cliente não encontrado");
+        return ResponseEntity.ok().build();
     }
 }

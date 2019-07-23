@@ -1,8 +1,8 @@
 package br.com.maicon.pratica.jwt.security;
 
 import br.com.maicon.pratica.jwt.dominio.entity.Cliente;
+import br.com.maicon.pratica.jwt.dominio.enums.Perfil;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -23,7 +23,7 @@ public class UserSpringSecurity implements UserDetails {
         this.email = cliente.getEmail();
         this.password = cliente.getPassword();
         this.authorities = cliente.getPerfis().stream()
-                .map(perfil -> new SimpleGrantedAuthority(perfil.authority()))
+                .map(Perfil::getAuthority)
                 .collect(Collectors.toList());
     }
 
