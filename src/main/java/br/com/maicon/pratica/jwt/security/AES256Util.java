@@ -1,9 +1,9 @@
 package br.com.maicon.pratica.jwt.security;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -38,6 +38,7 @@ public class AES256Util {
      * (see https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c).
      * By default, OpenSSL uses a single iteration, MD5 as the algorithm and UTF-8 encoded password data.
      * </p>
+     * <p>
      * <p>
      * keyLength  the length of the generated key (in bytes)
      * ivLength   the length of the generated IV (in bytes)
@@ -119,17 +120,17 @@ public class AES256Util {
         final byte[] cipherData = Base64.getDecoder().decode(text);
         final byte[][] keyAndIV = generateKeyAndIV(
                 Arrays.copyOfRange(cipherData, 8, 16),
-                secret.getBytes(UTF_8),
+                secret.getBytes(StandardCharsets.UTF_8),
                 MessageDigest.getInstance("MD5"));
-        return getText(cipherData,
-                new SecretKeySpec(keyAndIV[0], "AES"),
-                new IvParameterSpec(keyAndIV[1]));
+        return getText(cipherData, keyAndIV);
     }
 
-    private String getText(byte[] cipherData, SecretKey key, IvParameterSpec iv) throws Exception {
+    private String getText(byte[] cipherData, byte[][] keyAndIV) throws Exception {
         byte[] encrypted = Arrays.copyOfRange(cipherData, 16, cipherData.length);
         Cipher aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        aesCBC.init(DECRYPT_MODE, key, iv);
+        aesCBC.init(DECRYPT_MODE,
+                new SecretKeySpec(keyAndIV[0], "AES"),
+                new IvParameterSpec(keyAndIV[1]));
         return new String(aesCBC.doFinal(encrypted), UTF_8);
     }
 }
