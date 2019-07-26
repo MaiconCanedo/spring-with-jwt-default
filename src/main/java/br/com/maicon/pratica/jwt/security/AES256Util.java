@@ -40,20 +40,17 @@ public class AES256Util {
      * </p>
      * <p>
      * <p>
-     * keyLength  the length of the generated key (in bytes)
-     * ivLength   the length of the generated IV (in bytes)
-     * iterations the number of digestion rounds
      *
-     * @param salt     the salt data (8 bytes of data or <code>null</code>)
-     * @param password the password data (optional)
-     * @param md       the message digest algorithm to use
+     * @param keyLength  the length of the generated key (in bytes)
+     * @param ivLength   the length of the generated IV (in bytes)
+     * @param iterations the number of digestion rounds
+     * @param salt       the salt data (8 bytes of data or <code>null</code>)
+     * @param password   the password data (optional)
+     * @param md         the message digest algorithm to use
      * @return an two-element array with the generated key and IV
      */
-    public byte[][] generateKeyAndIV(byte[] salt, byte[] password, MessageDigest md) {
-        final int keyLength = 32;
-        final int ivLength = 16;
-        final int iterations = 1;
-
+    public byte[][] generateKeyAndIV(int keyLength, int ivLength, int iterations,
+                                     byte[] salt, byte[] password, MessageDigest md) {
         int digestLength = md.getDigestLength();
         int requiredLength = (keyLength + ivLength + digestLength - 1) / digestLength * digestLength;
         byte[] generatedData = new byte[requiredLength];
@@ -102,9 +99,10 @@ public class AES256Util {
     public String encrypt(String text) throws Exception {
         final byte[] bytes = text.getBytes(UTF_8);
         byte[] textBytes = Arrays.copyOfRange(bytes, 8, 16);
-
         final byte[][] keyAndIV =
-                generateKeyAndIV(null, secret.getBytes(UTF_8), MessageDigest.getInstance("MD5"));
+                generateKeyAndIV(32, 16, 1,
+                        null, secret.getBytes(UTF_8),
+                        MessageDigest.getInstance("MD5"));
         SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
         IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
 
@@ -119,6 +117,7 @@ public class AES256Util {
     public String decrypt(String text) throws Exception {
         final byte[] cipherData = Base64.getDecoder().decode(text);
         final byte[][] keyAndIV = generateKeyAndIV(
+                32, 16, 1,
                 Arrays.copyOfRange(cipherData, 8, 16),
                 secret.getBytes(StandardCharsets.UTF_8),
                 MessageDigest.getInstance("MD5"));
