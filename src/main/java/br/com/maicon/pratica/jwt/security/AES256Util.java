@@ -1,15 +1,16 @@
 package br.com.maicon.pratica.jwt.security;
 
-import org.springframework.security.crypto.bcrypt.BCrypt;
-
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Base64;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.crypto.Cipher.DECRYPT_MODE;
 
 public class AES256Util {
 
@@ -20,6 +21,16 @@ public class AES256Util {
         this.secret = secret;
     }
 
+    public static void main(String[] args) throws Exception {
+        String token = "U2FsdGVkX1+VfltxXx9ObwqyOv7mQKIRh1oDvXJdzqA=";
+        final String texto = AES_256_UTIL.decrypt(token);
+        System.out.println(texto);
+        System.out.println(token);
+        final String senha = AES_256_UTIL.encrypt("Maicon");
+        System.out.println(senha);
+        System.out.println(AES_256_UTIL.decrypt(senha));
+    }
+
     /**
      * Generates a key and an initialization vector (IV) with the given salt and password.
      * <p>
@@ -27,16 +38,20 @@ public class AES256Util {
      * (see https://github.com/openssl/openssl/blob/master/crypto/evp/evp_key.c).
      * By default, OpenSSL uses a single iteration, MD5 as the algorithm and UTF-8 encoded password data.
      * </p>
+     * <p>
+     * keyLength  the length of the generated key (in bytes)
+     * ivLength   the length of the generated IV (in bytes)
+     * iterations the number of digestion rounds
      *
-     * @param keyLength  the length of the generated key (in bytes)
-     * @param ivLength   the length of the generated IV (in bytes)
-     * @param iterations the number of digestion rounds
-     * @param salt       the salt data (8 bytes of data or <code>null</code>)
-     * @param password   the password data (optional)
-     * @param md         the message digest algorithm to use
+     * @param salt     the salt data (8 bytes of data or <code>null</code>)
+     * @param password the password data (optional)
+     * @param md       the message digest algorithm to use
      * @return an two-element array with the generated key and IV
      */
-    public static byte[][] generateKeyAndIV(int keyLength, int ivLength, int iterations, byte[] salt, byte[] password, MessageDigest md) {
+    public byte[][] generateKeyAndIV(byte[] salt, byte[] password, MessageDigest md) {
+        final int keyLength = 32;
+        final int ivLength = 16;
+        final int iterations = 1;
 
         int digestLength = md.getDigestLength();
         int requiredLength = (keyLength + ivLength + digestLength - 1) / digestLength * digestLength;
@@ -84,49 +99,37 @@ public class AES256Util {
     }
 
     public String encrypt(String text) throws Exception {
-        final byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-        byte[] textBaytes = Arrays.copyOfRange(bytes, 8, 16);
+        final byte[] bytes = text.getBytes(UTF_8);
+        byte[] textBytes = Arrays.copyOfRange(bytes, 8, 16);
 
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
         final byte[][] keyAndIV =
-                generateKeyAndIV(32, 16, 1,
-                        null, secret.getBytes(StandardCharsets.UTF_8), md5);
+                generateKeyAndIV(null, secret.getBytes(UTF_8), MessageDigest.getInstance("MD5"));
         SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
         IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
 
-        byte[] encrypted = Arrays.copyOfRange(textBaytes, 16, textBaytes.length);
+        byte[] encrypted = Arrays.copyOfRange(textBytes, 16, textBytes.length);
         Cipher aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding");
         aesCBC.init(Cipher.ENCRYPT_MODE, key, iv);
         byte[] encryptedData = aesCBC.doFinal(encrypted);
         final byte[] encode = Base64.getEncoder().encode(encryptedData);
-        return new String(encode, StandardCharsets.UTF_8);
+        return new String(encode, UTF_8);
     }
 
     public String decrypt(String text) throws Exception {
-        byte[] cipherData = Base64.getDecoder().decode(text);
-        byte[] saltData = Arrays.copyOfRange(cipherData, 8, 16);
-
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        final byte[][] keyAndIV =
-                generateKeyAndIV(32, 16, 1,
-                        saltData, secret.getBytes(StandardCharsets.UTF_8), md5);
-        SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
-        IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
-
-        byte[] encrypted = Arrays.copyOfRange(cipherData, 16, cipherData.length);
-        Cipher aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        aesCBC.init(Cipher.DECRYPT_MODE, key, iv);
-        byte[] decryptedData = aesCBC.doFinal(encrypted);
-        return new String(decryptedData, StandardCharsets.UTF_8);
+        final byte[] cipherData = Base64.getDecoder().decode(text);
+        final byte[][] keyAndIV = generateKeyAndIV(
+                Arrays.copyOfRange(cipherData, 8, 16),
+                secret.getBytes(UTF_8),
+                MessageDigest.getInstance("MD5"));
+        return getText(cipherData,
+                new SecretKeySpec(keyAndIV[0], "AES"),
+                new IvParameterSpec(keyAndIV[1]));
     }
 
-    public static void main(String[] args) throws Exception {
-        String token = "U2FsdGVkX1+VfltxXx9ObwqyOv7mQKIRh1oDvXJdzqA=";
-        final String texto = AES_256_UTIL.decrypt(token);
-        System.out.println(texto);
-        System.out.println(token);
-        final String senha = AES_256_UTIL.encrypt("Maicon");
-        System.out.println(senha);
-        System.out.println(AES_256_UTIL.decrypt(senha));
+    private String getText(byte[] cipherData, SecretKey key, IvParameterSpec iv) throws Exception {
+        byte[] encrypted = Arrays.copyOfRange(cipherData, 16, cipherData.length);
+        Cipher aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        aesCBC.init(DECRYPT_MODE, key, iv);
+        return new String(aesCBC.doFinal(encrypted), UTF_8);
     }
 }
