@@ -3,7 +3,6 @@ package br.com.maicon.pratica.jwt.security;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.security.DigestException;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -11,6 +10,7 @@ import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.crypto.Cipher.DECRYPT_MODE;
+import static javax.crypto.Cipher.ENCRYPT_MODE;
 
 public class AES256Util {
 
@@ -22,13 +22,13 @@ public class AES256Util {
     }
 
     public static void main(String[] args) throws Exception {
-        String token = "U2FsdGVkX1+VfltxXx9ObwqyOv7mQKIRh1oDvXJdzqA=";
+        String token = "U2FsdGVkX1/ANTiEtcFawN+89l3cekm7f9aW5605u33mhsiNMqIH3Mxh+JCt8l23";
         final String texto = AES_256_UTIL.decrypt(token);
-        System.out.println(texto);
         System.out.println(token);
-        final String senha = AES_256_UTIL.encrypt("Maicon");
-        System.out.println(senha);
-        System.out.println(AES_256_UTIL.decrypt(senha));
+        System.out.println(texto);
+//        final String senha = AES_256_UTIL.encrypt("Maicon");
+//        System.out.println(senha);
+//        System.out.println(new String(Base64.getDecoder().decode(senha), UTF_8));
     }
 
     /**
@@ -97,21 +97,21 @@ public class AES256Util {
     }
 
     public String encrypt(String text) throws Exception {
-        final byte[] bytes = text.getBytes(UTF_8);
-        byte[] textBytes = Arrays.copyOfRange(bytes, 8, 16);
-        final byte[][] keyAndIV =
-                generateKeyAndIV(32, 16, 1,
-                        null, secret.getBytes(UTF_8),
-                        MessageDigest.getInstance("MD5"));
-        SecretKeySpec key = new SecretKeySpec(keyAndIV[0], "AES");
-        IvParameterSpec iv = new IvParameterSpec(keyAndIV[1]);
 
-        byte[] encrypted = Arrays.copyOfRange(textBytes, 16, textBytes.length);
+        final byte[] cipherData = Base64.getDecoder()
+                .decode("U2FsdGVkX1+VfltxXx9ObwqyOv7mQKIRh1oDvXJdzqA=");
+        final byte[][] keyAndIV = generateKeyAndIV(
+                32, 16, 1,
+                Arrays.copyOfRange(cipherData, 8, 16),
+                secret.getBytes(UTF_8),
+                MessageDigest.getInstance("MD5"));
+        byte[] encrypted = Arrays.copyOfRange(cipherData, 16, cipherData.length);
         Cipher aesCBC = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        aesCBC.init(Cipher.ENCRYPT_MODE, key, iv);
-        byte[] encryptedData = aesCBC.doFinal(encrypted);
-        final byte[] encode = Base64.getEncoder().encode(encryptedData);
-        return new String(encode, UTF_8);
+        aesCBC.init(ENCRYPT_MODE,
+                new SecretKeySpec(keyAndIV[0], "AES"),
+                new IvParameterSpec(keyAndIV[1]));
+        return Base64.getEncoder()
+                .encodeToString(aesCBC.doFinal(text.getBytes(UTF_8)));
     }
 
     public String decrypt(String text) throws Exception {
@@ -119,7 +119,7 @@ public class AES256Util {
         final byte[][] keyAndIV = generateKeyAndIV(
                 32, 16, 1,
                 Arrays.copyOfRange(cipherData, 8, 16),
-                secret.getBytes(StandardCharsets.UTF_8),
+                secret.getBytes(UTF_8),
                 MessageDigest.getInstance("MD5"));
         return getText(cipherData, keyAndIV);
     }
