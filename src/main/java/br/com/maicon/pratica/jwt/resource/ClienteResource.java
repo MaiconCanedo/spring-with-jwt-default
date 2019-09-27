@@ -37,7 +37,7 @@ public class ClienteResource {
 
     @GetMapping(path = "{id}")
     public ResponseEntity<ClienteDTO> find(@PathVariable Long id) {
-        UserService.getAutheticated()
+        UserService.getAuthenticated()
                 .filter(user -> user.hasPerfil(Perfil.ADMIN) || id.equals(user.getId()))
                 .orElseThrow(() -> new ForbiddenException("Acesso Negado"));
         return ResponseEntity.ok(clienteService.findById(id)
@@ -56,7 +56,7 @@ public class ClienteResource {
     @PatchMapping(path = "{id}")
     public ResponseEntity<Void> update(@PathVariable Long id,
                                        @RequestBody Map<String, Object> clienteMap) {
-        UserService.getAutheticated()
+        UserService.getAuthenticated()
                 .filter(user -> user.hasPerfil(Perfil.ADMIN) || id.equals(user.getId()))
                 .orElseThrow(() -> new ForbiddenException("Acesso Negado"));
         if (!clienteService.update(id, clienteMap))

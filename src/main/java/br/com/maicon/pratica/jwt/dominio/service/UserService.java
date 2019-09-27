@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class UserService {
 
-    public static Optional<UserSpringSecurity> getAutheticated() {
+    public static Optional<UserSpringSecurity> getAuthenticated() {
         try {
             return Optional.ofNullable((UserSpringSecurity) SecurityContextHolder
                     .getContext()
